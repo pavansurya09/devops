@@ -1,0 +1,59 @@
+Ansible cmds
+
+
+# for passwordless_authentication To copy out public key to vm , so everytime it wont ask for password or .pem files
+  ssh-copy-id -i ~/.ssh/id_rsa.pub \
+    -o "IdentitiesOnly=yes" \
+    -o "IdentityFile=~/Downloads/manage-nodes.pem" \
+    ubuntu@34.201.109.185
+
+# for passwordless_authentication using password for one time instead of .pem file
+  ssh to vm and then 
+  Go to the file /etc/ssh/sshd_config.d/60-cloudimg-settings.conf
+  Update PasswordAuthentication yes
+  Restart SSH -> sudo systemctl restart ssh
+# or else
+  Go to the file /etc/ssh/sshd_config.d and remove # before passwirdAuthentication yes
+# now we told vms here to use a password for authenication setting password
+  sudo passwd ubuntu (give password)
+
+### now we can use ssh ubuntu@ipv4 to login directly
+
+$$$$$$$$$$$$$ Ansible Inventory $$$$$$$$$$$$
+
+  ansible -i inventoru.ini -m ping all
+-m for module
+-a for arguments
+
+  &&&&&&&&&&&&& Adhoc cmsds - for simple tasks &&&&&&&&&&&&
+  ansible -i iniventory.ini -m shell -a "sudo apt install openjdk" all (for all inventory stuff)
+  ansible -i iniventory.ini -m shell -a "sudo apt install openjdk" ubuntu@ipv4 (for a single vm)
+  ansible -i iniventory.ini [app] -m shell -a "sudo apt install openjdk" all (for a group of vms)
+
+
+
+$$$$$$$$$$$$$$$$$$$$$$ playbook $$$$$$$$$$$$$$$$$$$$$$
+---
+- hosts: all
+  become: true
+  tasks:
+    - name: Install apache httpd
+      ansible.builtin.apt:
+        name: apache2
+        state: present
+        update_cache: yes
+    - name: Copy file with owner and permissions
+      ansible.builtin.copy:
+        src: index.html
+        dest: /var/www/html
+        owner: root
+        group: root
+        mode: '0644'
+
+
+
+
+
+
+
+
